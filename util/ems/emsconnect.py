@@ -6,6 +6,8 @@ import numpy as np
 import sys
 import os
 
+from ..ports import find_port
+
 #imports from our system
 from interface.SerialThingy import SerialThingy
 import interface.singlepulse as singlepulse
@@ -41,7 +43,8 @@ class EMS(object):
         fake = config.getboolean('EMS Machine', 'fake_connection')
         self.ems = SerialThingy(fake)
         if not fake:
-            address = config.get('EMS Machine', 'machine_address')
+            sn = config.get('EMS Machine', 'serial_number')
+            address = find_port(sn)
             self.ems.open_port(address, SERIAL_RESPONSE)
         else:
             self.ems.open_port(None, SERIAL_RESPONSE)
