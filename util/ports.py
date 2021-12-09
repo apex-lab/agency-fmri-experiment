@@ -22,3 +22,18 @@ def find_port(serial_num):
         raise Exception('Serial number %s not found!'%serial_num)
     else:
         return target_port
+
+def find_port_by_name(name):
+    '''
+    finds port handle with given hardware serial number
+    '''
+    ports = list_ports.comports()
+    target_port = None
+    for port, desc, hwid in sorted(ports):
+        if desc == name:
+            target_port = port
+            break
+    if target_port is None:
+        raise Exception('Serial number %s not found!'%serial_num)
+    else:
+        return target_port

@@ -1,4 +1,23 @@
-from .RTBox import RTBox as Box
+from .RTBox import RTBox
+from ..ports import find_port_by_name
+import serial
+
+HARWARE_NAME = 'USB <-> Serial - USB <-> Serial'
+
+class Box(RTBox):
+
+	def _openBox(self):
+		'''
+		overwrites method that is otherwise failing to
+		find the proper port
+		'''
+		port = find_port_by_name(HARWARE_NAME)
+		ser = serial.Serial(port, 115200, timeout = 0.3)
+		ser.write(b'X')
+		ID = ser.read(21)
+		v = float(ID[18:])
+		if v>100: v /= 100
+		return (ser, v)
 
 def revbits(n):
 	'''
@@ -9,7 +28,7 @@ def revbits(n):
 	Pin assignments on RTBox are also shifted by one relative to
 	most receiving ports, so we do that too.
 
-	Input is just an int 
+	Input is just an int
 	'''
 	bin_str = bin(n)[2:]
 	k = len(bin_str)
@@ -17,7 +36,7 @@ def revbits(n):
 		bin_str = (8 - k) * '0' + bin_str
 	else:
 		raise ValueError(
-			"Brain Products only takes 7-bit ints (0<n<128)" + 
+			"Brain Products only takes 7-bit ints (0<n<128)" +
 			" from RTBox (since pin assignments aren't aligned)."
 			)
 	return int(bin_str[::-1], 2) >> 1 # reverse and shift by one
@@ -56,7 +75,3 @@ class EventMarker:
 		(you'll get a serial port conflict down the line)
 		'''
 		self.box.close()
-
-
-
-
