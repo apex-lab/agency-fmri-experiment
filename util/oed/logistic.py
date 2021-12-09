@@ -116,6 +116,7 @@ class LogisticOptimalDesign:
         self.bmu_ = pyro.param("beta_mean").detach().clone()
         self.bsd_ = pyro.param("beta_sd").detach().clone()
         self._update_model()
+        return True
 
     def _eig(self, num_steps = 1000, start_lr = 0.1, end_lr = 0.001):
         optimizer = pyro.optim.ExponentialLR({'optimizer': torch.optim.Adam,
