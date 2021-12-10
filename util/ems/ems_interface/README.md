@@ -1,0 +1,3 @@
+This module, which provides a Python interface to the HASOMED Rehastim 1 electrical muscle stimulator, was provided by the [Human Computer Integration Lab](https://lab.plopes.org) and is similar to the interface used in several of their citable projects (e.g. [this one](https://github.com/PedroLopes/muscle-plotter/tree/master/muscleplotter/modules/ems). If you use this module elsewhere, please cite those projects and not this one.
+
+You probably can't get your hands on a Reha1 anymore, since they were discontinued a while ago. An updated version of the library for the more recent RehaMove 3 is available [here](https://lab.plopes.org/rehalib.html).
