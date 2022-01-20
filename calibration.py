@@ -1,5 +1,5 @@
 from util.ui.cedrus import RBx20
-from util.ems.emsconnect import EMS
+from util.ems import EMS
 from time import sleep
 import numpy as np
 

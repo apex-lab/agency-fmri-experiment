@@ -1,6 +1,6 @@
 from serial import Serial
 from psychopy import core
-from .. import find_port
+from ..ports import find_port
 
 class RBx20:
     '''
