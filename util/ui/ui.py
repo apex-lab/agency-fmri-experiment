@@ -117,7 +117,7 @@ class EventHandler:
         if stimulation is None:
             self.win.callOnFlip(self.get_rt)
         else:
-            self.win.callOnFlip(self.get_rt, stimulation * 1e3)
+            self.win.callOnFlip(self.get_rt, stimulation * 1e-3)
         self.win.flip()
 
         # remove text from screen to provide feedback that press was registered
