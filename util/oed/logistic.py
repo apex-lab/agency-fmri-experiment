@@ -6,6 +6,7 @@ import pyro.distributions as dist
 from pyro.contrib.oed.eig import marginal_eig
 from pyro.infer import SVI, JitTrace_ELBO
 from pyro.optim import Adam
+from pyro.util import ignore_jit_warnings
 
 from numpy.random import normal, lognormal
 import numpy as np
@@ -73,18 +74,19 @@ class LogisticOptimalDesign:
             '''
             approximates posterior p(alpha,beta|x,y)
             '''
-            a_mean = pyro.param("alpha_mean",
-                                torch.tensor(alpha_mu).float())
-            a_sd = pyro.param("alpha_sd",
-                                torch.tensor(alpha_sigma).float(),
-                                constraint = positive)
-            b_mean = pyro.param("beta_mean",
-                                torch.tensor(beta_mu).float())
-            b_sd = pyro.param("beta_sd",
-                                torch.tensor(beta_sigma).float(),
-                                constraint = positive)
-            pyro.sample("alpha", dist.LogNormal(a_mean, a_sd))
-            pyro.sample("beta", dist.LogNormal(b_mean, b_sd))
+            with ignore_jit_warnings():
+                a_mean = pyro.param("alpha_mean",
+                                    torch.tensor(alpha_mu).float())
+                a_sd = pyro.param("alpha_sd",
+                                    torch.tensor(alpha_sigma).float(),
+                                    constraint = positive)
+                b_mean = pyro.param("beta_mean",
+                                    torch.tensor(beta_mu).float())
+                b_sd = pyro.param("beta_sd",
+                                    torch.tensor(beta_sigma).float(),
+                                    constraint = positive)
+                pyro.sample("alpha", dist.LogNormal(a_mean, a_sd))
+                pyro.sample("beta", dist.LogNormal(b_mean, b_sd))
         self.guide = guide
 
     def _update_model(self):
@@ -95,28 +97,31 @@ class LogisticOptimalDesign:
         '''
         Updates current parameter estimates given new data
         '''
-        x = torch.tensor(x).float()
-        y = torch.tensor(y)
-        # use variational inference to apperoximate posterior
-        self.xs = torch.cat([self.xs, x.expand(1)], dim = 0)
-        self.ys = torch.cat([self.ys, y.expand(1)])
-        conditioned_model = pyro.condition(self._orig_model, {"y": self.ys})
-        svi = SVI(conditioned_model,
-              self.guide,
-              Adam({"lr": .005}),
-              loss = JitTrace_ELBO(),
-              num_samples = 100)
-        num_iters = 500
-        for i in range(num_iters):
-            elbo = svi.step(self.xs)
+        with ignore_jit_warnings():
+            x = torch.tensor(x).float()
+            y = torch.tensor(y)
+            # use variational inference to apperoximate posterior
+            self.xs = torch.cat([self.xs, x.expand(1)], dim = 0)
+            self.ys = torch.cat([self.ys, y.expand(1)])
+            conditioned_model = pyro.condition(self._orig_model, {"y": self.ys})
 
-        # update parameter estimates
-        self.amu_ = pyro.param("alpha_mean").detach().clone()
-        self.asd_ = pyro.param("alpha_sd").detach().clone()
-        self.bmu_ = pyro.param("beta_mean").detach().clone()
-        self.bsd_ = pyro.param("beta_sd").detach().clone()
-        self._update_model()
-        return True
+            svi = SVI(conditioned_model,
+                  self.guide,
+                  Adam({"lr": .005}),
+                  loss = JitTrace_ELBO(),
+                  #num_samples = 100
+                  )
+            num_iters = 500
+            for i in range(num_iters):
+                elbo = svi.step(self.xs)
+
+            # update parameter estimates
+            self.amu_ = pyro.param("alpha_mean").detach().clone()
+            self.asd_ = pyro.param("alpha_sd").detach().clone()
+            self.bmu_ = pyro.param("beta_mean").detach().clone()
+            self.bsd_ = pyro.param("beta_sd").detach().clone()
+            self._update_model()
+            return True
 
     def _eig(self, num_steps = 1000, start_lr = 0.1, end_lr = 0.001):
         optimizer = pyro.optim.ExponentialLR({'optimizer': torch.optim.Adam,

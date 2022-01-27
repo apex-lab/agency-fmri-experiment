@@ -15,8 +15,9 @@ class TSVWriter:
         existed_already = os.path.exists(fpath)
         if existed_already: # load previous values
             self._df = pd.read_csv(fpath, sep = '\t')
-        self._f = open(fpath, 'w')
-        if not existed_already:
+            self._f = open(fpath, 'a')
+        else:
+            self._f = open(fpath, 'w')
             fields = ['trial_type', 'trial', 'intensity', 'latency',
                         'rt', 'pressed_first', 'agency']
             header = '\t'.join(fields)
@@ -27,15 +28,16 @@ class TSVWriter:
         '''
         writes a trial's parameters to log
         '''
-        line = '\n' + '\t'.join(
+        _rt = rt * 1e3
+        line = '\n' + '\t'.join([
             block_name,
             f'{trial_num}', # int
             f'{intensity}', # in mA
             f'{latency:.2f}', # in ms
-            f'{rt:.2f}', # in ms
+            f'{_rt:.2f}', # in ms
             f'{pressed_first:d}', # boolean
             f'{agency:d}' # boolean
-            )
+            ])
         self._f.write(line)
 
     @property

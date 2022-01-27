@@ -9,6 +9,7 @@ serial_response_active = False
 class EMS:
 
     def __init__(self, fake = False):
+        self.is_fake = fake
         self.ems = SerialThingy.SerialThingy(fake)
         self.ems.open_port(port, serial_response_active)
 
@@ -16,7 +17,8 @@ class EMS:
         self.ems.write(singlepulse.generate(channel, width, intensity))
 
     def close(self):
-        self.ems.ser.close()
+        if not self.is_fake:
+            self.ems.ser.close()
 
     def __del__(self):
         self.close()
