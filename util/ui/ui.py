@@ -94,7 +94,7 @@ class EventHandler:
         if self.is_test:
             fake_rt = np.random.uniform(.2, .4)
             sleep(fake_rt)
-            self.rt = fake_rt
+            self.rt = fake_rt * 1e3
             self.pressed_first = False
             return fake_rt, False
         else:

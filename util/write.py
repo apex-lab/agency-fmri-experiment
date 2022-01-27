@@ -28,13 +28,12 @@ class TSVWriter:
         '''
         writes a trial's parameters to log
         '''
-        _rt = rt * 1e3
         line = '\n' + '\t'.join([
             block_name,
             f'{trial_num}', # int
             f'{intensity}', # in mA
             f'{latency:.2f}', # in ms
-            f'{_rt:.2f}', # in ms
+            f'{rt:.2f}', # in ms
             f'{pressed_first:d}', # boolean
             f'{agency:d}' # boolean
             ])
