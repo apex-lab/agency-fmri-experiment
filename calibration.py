@@ -8,7 +8,7 @@ stimulator = EMS()
 
 n_tries = 10 # per level
 stim_level = None
-for level in np.arange(1, 20):
+for level in np.arange(1, 25):
     print('\nTesting intensity level %d mA...'%level)
     successes = 0
     for i in range(n_tries):
