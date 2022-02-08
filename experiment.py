@@ -18,7 +18,7 @@ TEST_MODE = False
 STIM_INTERVAL_START = 50 # in milliseconds relative to RT trial start
 STIM_INTERVAL_END = 600
 
-# trial counts 
+# trial counts
 PRETEST_TRIALS = 50
 STIMULATION_TRIALS = 250
 POSTTEST_TRIALS = 50
@@ -49,12 +49,10 @@ def on_trial_start(): # tell event handler how to send triggers
 	marker.send(1)
 ui.on_trial_start = on_trial_start
 
-def on_stimulate():
+def on_stimulate(): # and tell it how to apply stimulation 
 	'''
 	stimulation instructions for event handler
 	'''
-	channel = 1
-	pulse_width = 400 # microseconds
 	marker.send(2) # send trigger at same time
 	stimulator.pulse(intensity)
 ui.on_stimulate = on_stimulate
