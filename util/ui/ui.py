@@ -76,26 +76,29 @@ class EventHandler:
             key, rt = self.input.waitPress(reset = False)
             self.rt = rt
             self.pressed_first = True
-            return rt * 1e3, True
+            return rt, True
         key, rt = self.input.waitPress(timeout = stimulation, reset = False)
         self.on_stimulate() # should apply a pulse and send trigger to amp
         if key is None: # once stimulated, resume waiting for press
             key, rt = self.input.waitPress(reset = False)
-            pressed_first = True
-        else:
             pressed_first = False
+        else:
+            pressed_first = True
         # store in class before returning for when call on flip
         self.rt = rt # and therefore can't see return values
         self.pressed_first = pressed_first
-        return rt * 1e3, pressed_first
+        return rt, pressed_first
 
     def get_rt(self, stimulation = None):
         self.on_trial_start() # should send trigger to EEG amp
         if self.is_test:
             fake_rt = np.random.uniform(.2, .4)
             sleep(fake_rt)
-            self.rt = fake_rt * 1e3
-            self.pressed_first = False
+            self.rt = fake_rt
+            if stimulation is None:
+                self.pressed_first = False
+            else:
+                self.pressed_first = (fake_rt < stimulation)
             return fake_rt, False
         else:
             return self._get_rt(stimulation)
@@ -130,7 +133,7 @@ class EventHandler:
         pressed_first = self.pressed_first
         if rt < .5: # just to keep the trial length somewhat consistent
             sleep(.5 - rt)
-        return rt, pressed_first
+        return (1e3 * rt), pressed_first
 
     def display(self, text):
         '''
@@ -159,13 +162,15 @@ class EventHandler:
         sleep(wait_secs)
 
     def get_response(self):
-        self.display('Did you cause the movement?')
+        self.display('Did you cause the button press?')
         if self.is_test:
             sleep(.2)
             return np.random.choice([0, 1])
         else:
-            key = self.kb.waitKeys(keyList = ['b', 'm'])
+            key = self.kb.waitKeys(keyList = ['b', 'm'])[0]
             if key.name == 'b':
                 return 1
-            else:
+            elif key.name == 'm':
                 return 0
+            else:
+                raise ValueError("that shouldn't have happened")

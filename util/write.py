@@ -70,6 +70,16 @@ class TSVWriter:
             return y.tolist()
 
     @property
+    def pf(self):
+        if self._df is None:
+            return []
+        elif np.sum(self._df.trial_type == 'stimulation') == 0:
+            return []
+        else:
+            pf = self._df.pressed_first[self._df.trial_type == 'stimulation']
+            return pf.tolist()
+
+    @property
     def n_posttest(self):
         if self._df is None:
             return 0
