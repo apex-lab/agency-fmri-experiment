@@ -19,9 +19,9 @@ STIM_INTERVAL_START = 50 # in milliseconds relative to RT trial start
 STIM_INTERVAL_END = 600
 
 # trial counts
-PRETEST_TRIALS = 50
+PRETEST_TRIALS = 30
 STIMULATION_TRIALS = 250
-POSTTEST_TRIALS = 50
+POSTTEST_TRIALS = 30
 
 ################################################################################
 
@@ -49,7 +49,7 @@ def on_trial_start(): # tell event handler how to send triggers
 	marker.send(1)
 ui.on_trial_start = on_trial_start
 
-def on_stimulate(): # and tell it how to apply stimulation 
+def on_stimulate(): # and tell it how to apply stimulation
 	'''
 	stimulation instructions for event handler
 	'''
@@ -98,7 +98,7 @@ print('\nEnding pretest at %d minutes.'%((time() - t0)/60))
 des = LogisticOptimalDesign(
 	# specify priors
 	alpha_mean = np.mean(pretest_rts) - 40, # RT minus preemptive gain
-	alpha_scale = np.std(pretest_rts) + 30, # add a little extra variability
+	alpha_scale = np.std(pretest_rts),
 	beta_mean = 0.017, # average slope from Kasahara et al. (2018)
 	beta_scale = 0.005, # encompasses all observed values from Kasahara
 	candidate_designs = np.arange(STIM_INTERVAL_START, STIM_INTERVAL_END)
