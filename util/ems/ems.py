@@ -13,8 +13,10 @@ class EMS:
         self.ems = SerialThingy.SerialThingy(fake)
         self.ems.open_port(port, serial_response_active)
 
-    def pulse(self, intensity, channel = 1, width = 400):
-        self.ems.write(singlepulse.generate(channel, width, intensity))
+    def pulse(self, intensity, channel = 1, width = 200, repetitions = 3):
+        one_pulse = singlepulse.generate(channel, width, intensity)
+        for i in range(repetitions):
+            self.ems.write(one_pulse)
 
     def close(self):
         if not self.is_fake:
