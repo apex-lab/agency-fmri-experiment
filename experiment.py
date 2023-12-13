@@ -9,21 +9,33 @@ from util.events import EventMarker
 from util.ui import EventHandler
 from util.write import TSVWriter
 from util.ems import EMS
+from psychopy import event
 
 ## CONFIG ######################################################################
 
 TEST_MODE = False
 
 # range of stimulation times to consider
-STIM_INTERVAL_START = 50 # in milliseconds relative to RT trial start
-STIM_INTERVAL_END = 600
+STIM_INTERVAL_START = 0 # in milliseconds relative to RT trial start
+STIM_INTERVAL_END = 1000
 
 # trial counts
 PRETEST_TRIALS = 30
 STIMULATION_TRIALS = 250
 POSTTEST_TRIALS = 30
 
+MRI_EMULATED_KEY = 's' # key to be 'pressed' on keyboard every TR
+
 ################################################################################
+
+## setup another thread to look out for TRs from the MRI scanner
+def record_tr():
+	return None
+event.globalKeys.clear()
+event.globalKeys.add(key = MRI_EMULATED_KEY, func = myfunc)
+
+
+
 
 ## initialize helpers
 marker = EventMarker()
@@ -193,6 +205,7 @@ print('\nEnding posttest at %d minutes.'%((time() - t0)/60))
 
 ## clean up and end experiment
 marker.close()
+event.globalKeys.remove(key = 'all')
 ui.display( # notify subject that experiment has ended
 '''
 You have completed the experiment!
