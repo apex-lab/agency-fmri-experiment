@@ -42,6 +42,12 @@ def reparam(mean, std):
     sigma = np.sqrt(sigma2)
     return mu, sigma
 
+def inverse_reparam(mu, sigma):
+    mean = np.exp(mu + (sigma*sigma/2))
+    var = (np.exp(sigma*sigma) - 1) * np.exp(2*mu + sigma*sigma)
+    return mean, np.sqrt(var)
+
+
 class LogisticOptimalDesign:
 
     def __init__(self, alpha_mean, alpha_scale,
@@ -165,7 +171,7 @@ class LogisticOptimalDesign:
         prob_min = (loss == loss.min(0)).mean(1) # probability each x is JND
         return x, prob_min
 
-    def get_next_x(self, mode = 'oed', **kwargs):
+    def get_next_x(self, mode = 'bopt', **kwargs):
         '''
         outputs value of x that optimizes experimenter objective
 
@@ -186,3 +192,16 @@ class LogisticOptimalDesign:
         else:
             raise ValueError("mode must be either 'oed' or 'bopt'!")
         return next_x
+
+    def get_param_estimates(self):
+        params = dict(
+            alpha_mu = self.amu_.detach().numpy(),
+            alpha_sigma = self.asd_.detach().numpy(),
+            beta_mu = self.bmu_.detach().numpy(),
+            beta_sigma = self.bsd_.detach().numpy(),
+        )
+        for p in ('alpha', 'beta'):
+            mean, std = inverse_reparam(params['%s_mu'%p], params['%s_sigma'%p])
+            params['%s_mean'%p] = mean
+            params['%s_std'%p] = std
+        return params 
