@@ -203,5 +203,5 @@ class LogisticOptimalDesign:
         for p in ('alpha', 'beta'):
             mean, std = inverse_reparam(params['%s_mu'%p], params['%s_sigma'%p])
             params['%s_mean'%p] = mean
-            params['%s_std'%p] = std
-        return params 
+            params['%s_scale'%p] = std
+        return params
