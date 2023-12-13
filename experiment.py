@@ -261,7 +261,7 @@ if __name__ == __main__:
 	## setup another thread to look out for TRs from the MRI scanner
 	def record_tr():
 		t = time()
-		rt_log.write(timestamp = t)
+		tr_log.write(timestamp = t)
 		return
 	event.globalKeys.clear()
 	event.globalKeys.add(key = MRI_EMULATED_KEY, func = myfunc)
