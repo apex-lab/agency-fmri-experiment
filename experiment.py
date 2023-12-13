@@ -3,9 +3,10 @@ from time import sleep
 from warnings import warn
 from sys import stdout
 import numpy as np
+import pandas as pd
+import os
 
 from util.oed.logistic import LogisticOptimalDesign
-from util.events import EventMarker
 from util.ui import EventHandler
 from util.logging import TSVLogger
 from util.ems import EMS
@@ -87,16 +88,12 @@ def baseline_block(ui, log, run):
 	return
 
 
-def stimulation_block(ui, log, run, alpha_mean, alpha_scale, beta_mean, beta_scale):
+def stimulation_block(ui, log, run, priors):
 
 	## initialize optimal experiment design object
 	des = LogisticOptimalDesign(
-		# specify priors
-		alpha_mean = alpha_mean
-		alpha_scale = alpha_scale
-		beta_mean = beta_mean
-		beta_scale = beta_scale
-		candidate_designs = np.arange(STIM_INTERVAL_START, STIM_INTERVAL_END)
+		candidate_designs = np.arange(STIM_INTERVAL_START, STIM_INTERVAL_END),
+		**priors
 	)
 	executor = ThreadPoolExecutor(max_workers = 1) # for asyncronous model fitting
 
@@ -200,6 +197,34 @@ def stimulation_block(ui, log, run, alpha_mean, alpha_scale, beta_mean, beta_sca
 	print('\nEnding stimulation block at %d minutes.'%((time() - t0)/60))
 	return
 
+def get_priors(sub, run, dir):
+	'''
+	constructs priors for Bayesian Optimization
+	'''
+	prev_run = '%02d'%(int(run) - 1)
+	prev_run_f = os.path.join( # path to previous log file
+		dir, 'sub-%s'%sub,
+		'sub-%s_run-%s_log-%s.tsv'%(sub, prev_run, 'beh')
+		)
+	df = pd.read_csv(prev_run_f, sep = '\t')
+	if run == '02':
+		pretest_rts = df.rt
+		priors = dict(
+			alpha_mean = np.mean(pretest_rts) - 40, # RT minus preemptive gain
+			alpha_scale = np.std(pretest_rts),
+			beta_mean = 0.017, # average slope from Kasahara et al. (2018)
+			beta_scale = 0.005, # encompasses all observed values from Kasahara
+		)
+	else:
+		# use posterior from last time, but add a bit of uncertainty
+		priors = dict(
+			alpha_mean = df.alpha_mean.iloc[-1]
+			alpha_scale = df.alpha_scale.iloc[-1], * 1.5
+			beta_mean = df.beta_mean.iloc[-1],
+			beta_scale = df.beta_scale.iloc[-1] * 1.5
+		)
+	return priors
+
 
 if __name__ == __main__:
 
@@ -211,7 +236,8 @@ if __name__ == __main__:
 	## get run params from experimenter
 	subj_num = input("Enter subject number: ")
 	sub = '%02d'%int(subj_num)
-	run_num = input("Enter run number: ")
+	run_num = int(input("Enter run number: "))
+	assert(run_num > 0 & run_num < 10)
 	run = '%02d'%int(subj_num)
 	intensity = input("Enter stimulation intensity: ")
 	intensity = int(intensity)
@@ -275,14 +301,14 @@ if __name__ == __main__:
 	if run in ['01', '09']:
 		baseline_block(ui, beh_log, run)
 	else:
-		priors = get_priors(run)
-		stimulation_block(ui, beh_log, run, **priors)
+		priors = get_priors(sub, run, beh_log.dir)
+		stimulation_block(ui, beh_log, run, priors)
 
 	## notify subject that experiment has ended
 	ui.display(
 	'''
 	You have completed the experiment!
-	Please continue to stay still until instructed otherwise. 
+	Please continue to stay still until instructed otherwise.
 	The experimenter will be with you shortly.
 	'''
 	) # and notify experiment

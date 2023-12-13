@@ -22,6 +22,7 @@ class TSVLogger:
             be created within this root directory.
         '''
         dir = os.path.join(dir, 'sub-%s'%sub) # subject-level directory
+        self.dir = dir 
         if not os.path.exists(dir):
             os.makedirs(dir)
         fpath = os.path.join(dir, 'sub-%s_run-%s_log-%s.tsv'%(sub, run, ev_type))
