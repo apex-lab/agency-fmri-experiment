@@ -4,7 +4,6 @@ import numpy as np
 
 from psychopy.hardware.keyboard import Keyboard
 from psychtoolbox import hid
-from .cedrus import RBx20
 
 # fix psychtoolbox issue for older versions of psychopy
 import ctypes
@@ -31,12 +30,12 @@ def get_keyboard(dev_name):
 
 class EventHandler:
 
-    def __init__(self, is_test = False, **win_kwargs):
+    def __init__(self, rt_key = 'space', kb_name = 'Dell Dell USB Entry Keyboard',
+                        is_test = False, **win_kwargs):
 
         self.is_test = is_test
 
-        self.input = RBx20()
-        self.kb = get_keyboard('Dell Dell USB Entry Keyboard')
+        self.kb = get_keyboard(kb_name)
         self.win = visual.Window(**win_kwargs)
 
         # placeholder callables to be replaced in the main script
@@ -54,7 +53,7 @@ class EventHandler:
         if self.is_test:
             sleep(.1)
         else:
-            self.input.waitPress()
+            self.kb.waitPress(keyList = [self.rt_key], clear = True)
 
     def _get_rt(self, stimulation = None):
         '''
@@ -71,23 +70,34 @@ class EventHandler:
         is zero the RT clock for the button box, since we can correct the
         onset time with the photocell but we can't get correct RT post-hoc.
         '''
-        self.input.reset()
+        k = [self.rt_key] # the key used for RT measurements
+        self.kb.clearEvents()
+        self.kb.clock.reset()
         if stimulation is None:
-            key, rt = self.input.waitPress(reset = False)
-            self.rt = rt
+            keys = self.kb.waitKeys(
+                clear = False, waitRelease = False,
+                keyList = k
+                )
+            self.rt = keys[0].rt
             self.pressed_first = True
-            return rt, True
-        key, rt = self.input.waitPress(timeout = stimulation, reset = False)
+            return self.rt, self.pressed_first
+        keys = self.kb.waitKeys(
+            clear = False, maxWait = stimulation,
+            waitRelease = False, keyList = k
+            )
         self.on_stimulate() # should apply a pulse and send trigger to amp
-        if key is None: # once stimulated, resume waiting for press
-            key, rt = self.input.waitPress(reset = False)
-            pressed_first = False
-        else:
+        if keys:
             pressed_first = True
+        else:
+            keys = self.kb.waitKeys(
+                clear = False, waitRelease = False,,
+                keyList = k
+                )
+            pressed_first = False
         # store in class before returning for when call on flip
-        self.rt = rt # and therefore can't see return values
+        self.rt = keys[0].rt # and therefore can't see return values
         self.pressed_first = pressed_first
-        return rt, pressed_first
+        return self.rt, self.pressed_first
 
     def get_rt(self, stimulation = None):
         self.on_trial_start() # should send trigger to EEG amp
