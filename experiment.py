@@ -238,7 +238,7 @@ if __name__ == __main__:
 	sub = '%02d'%int(subj_num)
 	run_num = int(input("Enter run number: "))
 	assert(run_num > 0 & run_num < 10)
-	run = '%02d'%int(subj_num)
+	run = '%02d'%int(run_num)
 	intensity = input("Enter stimulation intensity: ")
 	intensity = int(intensity)
 
