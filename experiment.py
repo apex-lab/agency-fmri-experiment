@@ -10,6 +10,7 @@ from util.oed.logistic import LogisticOptimalDesign
 from util.ui import EventHandler
 from util.logging import TSVLogger
 from util.ems import EMS
+from util.mri import TRSync
 from psychopy import event
 
 from time import perf_counter as time
@@ -18,7 +19,7 @@ from time import perf_counter as time
 
 TEST_MODE = True
 
-KB_NAME = 'Dell Dell USB Entry Keyboard'
+KB_NAME = 'Dell Dell USB Keyboard'
 RT_KEY = 'space'
 
 # range of stimulation times to consider
@@ -26,7 +27,7 @@ STIM_INTERVAL_START = 0 # in milliseconds relative to RT trial start
 STIM_INTERVAL_END = 1000
 
 # trial counts (per block)
-BASELINE_TRIALS = 100
+BASELINE_TRIALS = 3
 STIMULATION_TRIALS = 200
 
 MRI_EMULATED_KEY = 's' # key to be 'pressed' on keyboard every TR
@@ -35,7 +36,7 @@ MRI_EMULATED_KEY = 's' # key to be 'pressed' on keyboard every TR
 def baseline_block(ui, log, run):
 
 	t0 = time()
-	print('\nBeginning pretest.')
+	print('\nBeginning baseline test.')
 	if run == '01':
 		ui.display(
 		'''
@@ -66,8 +67,8 @@ def baseline_block(ui, log, run):
 
 	for trial in range(BASELINE_TRIALS):
 		# keep experimenter in the loop via console
-		stdout.write("\rTrial {0:03d}".format(trial) + "/%d"%BASELINE_TRIALS)
-		stdout.flush()
+		#stdout.write("\rTrial {0:03d}".format(trial) + "/%d"%BASELINE_TRIALS)
+		#stdout.flush()
 
 		# wait until subject is ready
 		ui.display('Press button to begin trial.')
@@ -243,7 +244,6 @@ if __name__ == '__main__':
 	intensity = int(intensity)
 
 	## set up log files
-	tr_log = TSVLogger(sub, run, 'TR', ['timestamp'])
 	ev_log = TSVLogger(sub, run, 'events', ['event', 'timestamp'])
 	beh_log = TSVLogger(
 		sub, run, 'beh',
@@ -258,13 +258,8 @@ if __name__ == '__main__':
 			]
 		)
 
-	## setup another thread to look out for TRs from the MRI scanner
-	def record_tr():
-		t = time()
-		tr_log.write(timestamp = t)
-		return
-	event.globalKeys.clear()
-	event.globalKeys.add(key = MRI_EMULATED_KEY, func = record_tr)
+	tr_listener = TRSync(sub, run, KB_NAME, MRI_EMULATED_KEY)
+	tr_listener.start()
 	print('\n\nListening for TRs!\n\n')
 
 	## setup user interface / event EventHandler
@@ -296,6 +291,7 @@ if __name__ == '__main__':
 	# wait for experimenter to continue
 	print('\nIs MRI running?')
 	input('Press enter to continue...')
+	ui.win.winHandle.activate() # move window to front
 
 	## run a task block
 	if run in ['01', '09']:
@@ -316,7 +312,6 @@ if __name__ == '__main__':
 	input('\nPress enter to end script.')
 
 	## clean up and end run
-	event.globalKeys.remove(key = 'all')
-	tr_log.close()
+	tr_listener.stop()
 	beh_log.close()
 	ev_log.close()
