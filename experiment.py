@@ -16,7 +16,7 @@ from time import perf_counter as time
 
 ## CONFIG ######################################################################
 
-TEST_MODE = False
+TEST_MODE = True
 
 KB_NAME = 'Dell Dell USB Entry Keyboard'
 RT_KEY = 'space'
@@ -66,7 +66,7 @@ def baseline_block(ui, log, run):
 
 	for trial in range(BASELINE_TRIALS):
 		# keep experimenter in the loop via console
-		stdout.write("\rTrial {0:03d}".format(trial) + "/%d"%PRETEST_TRIALS)
+		stdout.write("\rTrial {0:03d}".format(trial) + "/%d"%BASELINE_TRIALS)
 		stdout.flush()
 
 		# wait until subject is ready
@@ -218,15 +218,15 @@ def get_priors(sub, run, dir):
 	else:
 		# use posterior from last time, but add a bit of uncertainty
 		priors = dict(
-			alpha_mean = df.alpha_mean.iloc[-1]
-			alpha_scale = df.alpha_scale.iloc[-1], * 1.5
+			alpha_mean = df.alpha_mean.iloc[-1],
+			alpha_scale = df.alpha_scale.iloc[-1] * 1.5,
 			beta_mean = df.beta_mean.iloc[-1],
 			beta_scale = df.beta_scale.iloc[-1] * 1.5
 		)
 	return priors
 
 
-if __name__ == __main__:
+if __name__ == '__main__':
 
 	## set up muscle stimulator
 	stimulator = EMS(TEST_MODE)
@@ -264,7 +264,7 @@ if __name__ == __main__:
 		tr_log.write(timestamp = t)
 		return
 	event.globalKeys.clear()
-	event.globalKeys.add(key = MRI_EMULATED_KEY, func = myfunc)
+	event.globalKeys.add(key = MRI_EMULATED_KEY, func = record_tr)
 	print('\n\nListening for TRs!\n\n')
 
 	## setup user interface / event EventHandler

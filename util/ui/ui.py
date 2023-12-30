@@ -90,7 +90,7 @@ class EventHandler:
             pressed_first = True
         else:
             keys = self.kb.waitKeys(
-                clear = False, waitRelease = False,,
+                clear = False, waitRelease = False,
                 keyList = k
                 )
             pressed_first = False

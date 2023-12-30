@@ -3,12 +3,15 @@ from .ems_interface.modules import singlepulse
 from ..ports import find_port
 
 SERIAL_NUMBER = 'HMYID101'
-port = find_port(SERIAL_NUMBER)
 serial_response_active = False
 
 class EMS:
 
     def __init__(self, fake = False):
+        if fake:
+            port = ''
+        else:
+            port = find_port(SERIAL_NUMBER)
         self.is_fake = fake
         self.ems = SerialThingy.SerialThingy(fake)
         self.ems.open_port(port, serial_response_active)
