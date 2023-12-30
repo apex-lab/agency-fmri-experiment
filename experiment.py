@@ -28,7 +28,7 @@ STIM_INTERVAL_END = 1000
 
 # trial counts (per block)
 BASELINE_TRIALS = 3
-STIMULATION_TRIALS = 200
+STIMULATION_TRIALS = 10
 
 MRI_EMULATED_KEY = 's' # key to be 'pressed' on keyboard every TR
 
@@ -204,8 +204,7 @@ def get_priors(sub, run, dir):
 	'''
 	prev_run = '%02d'%(int(run) - 1)
 	prev_run_f = os.path.join( # path to previous log file
-		dir, 'sub-%s'%sub,
-		'sub-%s_run-%s_log-%s.tsv'%(sub, prev_run, 'beh')
+		dir, 'sub-%s_run-%s_log-%s.tsv'%(sub, prev_run, 'beh')
 		)
 	df = pd.read_csv(prev_run_f, sep = '\t')
 	if run == '02':
