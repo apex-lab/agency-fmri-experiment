@@ -45,6 +45,7 @@ class EventHandler:
         # just for communication between methods
         self.rt = None
         self.pressed_first = None
+        self.rt_key = rt_key
 
     def waitPress(self):
         '''
@@ -53,7 +54,7 @@ class EventHandler:
         if self.is_test:
             sleep(.1)
         else:
-            self.kb.waitPress(keyList = [self.rt_key], clear = True)
+            self.kb.waitKeys(keyList = [self.rt_key], clear = True)
 
     def _get_rt(self, stimulation = None):
         '''

@@ -17,9 +17,9 @@ from time import perf_counter as time
 
 ## CONFIG ######################################################################
 
-TEST_MODE = True
+TEST_MODE = False
 
-KB_NAME = 'Dell Dell USB Keyboard'
+KB_NAME = 'DELL DELL USB Keyboard'
 RT_KEY = 'space'
 
 # range of stimulation times to consider

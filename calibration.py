@@ -1,10 +1,10 @@
-from util.ui.cedrus import RBx20
 from util.ems import EMS
 from time import sleep
 import numpy as np
+from util.ui.ui import get_keyboard
 
-button_box = RBx20()
 stimulator = EMS()
+kb = get_keyboard('DELL DELL USB Keyboard')
 
 n_tries = 10 # per level
 stim_level = None
@@ -14,10 +14,10 @@ for level in np.arange(1, 25):
     for i in range(n_tries):
         sleep(np.random.random()) # so subject can't anticipate timing
         # check if we can elicit a button press
-        button_box.reset() # clear buffer
+        kb.clearEvents() # clear buffer
         stimulator.pulse(intensity = level)
-        key, rt = button_box.waitPress(timeout = .5, reset = False)
-        if key is not None:
+        key = kb.waitKeys(maxWait = .5, waitRelease = False, keyList = ['space'])
+        if not key is None:
             successes += 1
     print('%d/%d attempts succesful at level %d.'%(successes, n_tries, level))
     if successes == n_tries: # if we can consistently get a press...
