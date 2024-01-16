@@ -11,13 +11,13 @@ from util.ui import EventHandler
 from util.logging import TSVLogger
 from util.ems import EMS
 from util.mri import TRSync
-from psychopy import event
+from psychopy import event, core
 
 from time import perf_counter as time
 
 ## CONFIG ######################################################################
 
-TEST_MODE = False
+TEST_MODE = True
 
 KB_NAME = 'DELL DELL USB Keyboard'
 RT_KEY = 'space'
@@ -27,13 +27,12 @@ STIM_INTERVAL_START = 0 # in milliseconds relative to RT trial start
 STIM_INTERVAL_END = 1000
 
 # trial counts (per block)
-BASELINE_TRIALS = 3
-STIMULATION_TRIALS = 10
+BLOCK_DURATION = 60*1
 
 MRI_EMULATED_KEY = 's' # key to be 'pressed' on keyboard every TR
 
 ## BLOCK DEFINITIONS #################################################################
-def baseline_block(ui, log, run):
+def baseline_block(ui, log, run, tr_listener):
 
 	t0 = time()
 	print('\nBeginning baseline test.')
@@ -64,11 +63,20 @@ def baseline_block(ui, log, run):
 	'''
 	)
 	ui.waitPress()
+	ui.display(
+	'''
+	Waiting for MRI... starting momentarily!
+	'''
+	)
+	print('\n\nWaiting for MRI!')
+	tr_listener.wait_until_first_TR()
 
-	for trial in range(BASELINE_TRIALS):
-		# keep experimenter in the loop via console
-		#stdout.write("\rTrial {0:03d}".format(trial) + "/%d"%BASELINE_TRIALS)
-		#stdout.flush()
+	clock = core.Clock()
+	clock.reset()
+	trial = 0
+	while clock.getTime() < BLOCK_DURATION:
+		
+		trial += 1
 
 		# wait until subject is ready
 		ui.display('Press button to begin trial.')
@@ -81,7 +89,7 @@ def baseline_block(ui, log, run):
 		# record trial data to log file
 		log.write(
 			trial_type = 'baseline',
-			trial = trial + 1,
+			trial = trial,
 			rt = rt,
 			)
 
@@ -89,7 +97,7 @@ def baseline_block(ui, log, run):
 	return
 
 
-def stimulation_block(ui, log, run, priors):
+def stimulation_block(ui, log, run, tr_listener, priors):
 
 	## initialize optimal experiment design object
 	des = LogisticOptimalDesign(
@@ -162,16 +170,27 @@ def stimulation_block(ui, log, run, priors):
 		'''
 		)
 		ui.waitPress()
-	print('\nBeginning stimulation block at %d minutes.'%((time() - t0)/60))
+	ui.display(
+	'''
+	Waiting for MRI... starting momentarily!
+	'''
+	)
+	print('\n\nWaiting for MRI!')
+	tr_listener.wait_until_first_TR()
+	print('\nBeginning stimulation block.')
 
-	for trial in range(STIMULATION_TRIALS):
-		stdout.write("\rTrial {0:03d}".format(trial) + "/%d"%STIMULATION_TRIALS)
-		stdout.flush()
+	clock = core.Clock()
+	clock.reset()
+	trial = 0
+	while clock.getTime() < BLOCK_DURATION:
+		
+		trial += 1
+		
 		ui.display('Press button to begin trial.')
 		ui.waitPress()
 		ui.fixation_cross(2 + 2*np.random.random())
 
-		if trial != 0: # wait until model has finished updating from last trial
+		if trial > 1: # wait until model has finished updating from last trial
 			wait([model_updated]) # though it should already be done by now
 
 		# select next stimulation latency via Bayesian optimization
@@ -186,7 +205,7 @@ def stimulation_block(ui, log, run, priors):
 		model_updated = executor.submit(des.update_model, stim_latency, _resp)
 		log.write(
 			trial_type = 'stimulation',
-			trial = trial + 1,
+			trial = trial,
 			intensity = intensity,
 			latency = stim_latency,
 			rt = rt,
@@ -287,17 +306,14 @@ if __name__ == '__main__':
 		ev_log.write(event = 'stimulation', timestamp = t)
 	ui.on_stimulate = on_stimulate
 
-	# wait for experimenter to continue
-	print('\nIs MRI running?')
-	input('Press enter to continue...')
 	ui.win.winHandle.activate() # move window to front
 
 	## run a task block
 	if run in ['01', '09']:
-		baseline_block(ui, beh_log, run)
+		baseline_block(ui, beh_log, run, tr_listener)
 	else:
 		priors = get_priors(sub, run, beh_log.dir)
-		stimulation_block(ui, beh_log, run, priors)
+		stimulation_block(ui, beh_log, run, tr_listener, priors)
 
 	## notify subject that experiment has ended
 	ui.display(
