@@ -3,12 +3,14 @@ from time import sleep
 import numpy as np
 from util.ui.ui import get_keyboard
 
+KEYS = ['9']
+
 stimulator = EMS()
-kb = get_keyboard('DELL DELL USB Keyboard')
+kb = get_keyboard('PST Inc. Celeritas Dev')
 
 n_tries = 10 # per level
 stim_level = None
-for level in np.arange(1, 25):
+for level in np.arange(5, 25):
     print('\nTesting intensity level %d mA...'%level)
     successes = 0
     for i in range(n_tries):
@@ -16,7 +18,7 @@ for level in np.arange(1, 25):
         # check if we can elicit a button press
         kb.clearEvents() # clear buffer
         stimulator.pulse(intensity = level)
-        key = kb.waitKeys(maxWait = .5, waitRelease = False, keyList = ['space'])
+        key = kb.waitKeys(maxWait = .5, waitRelease = False, keyList = KEYS)
         if not key is None:
             successes += 1
     print('%d/%d attempts succesful at level %d.'%(successes, n_tries, level))

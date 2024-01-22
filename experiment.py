@@ -17,17 +17,17 @@ from time import perf_counter as time
 
 ## CONFIG ######################################################################
 
-TEST_MODE = True
+TEST_MODE = False
 
-KB_NAME = 'DELL DELL USB Keyboard'
-RT_KEY = 'space'
+KB_NAME = 'PST Inc. Celeritas Dev'
+RT_KEY = '9'
 
 # range of stimulation times to consider
 STIM_INTERVAL_START = 0 # in milliseconds relative to RT trial start
 STIM_INTERVAL_END = 1000
 
 # trial counts (per block)
-BLOCK_DURATION = 60*1
+BLOCK_DURATION = 60*10
 
 MRI_EMULATED_KEY = 's' # key to be 'pressed' on keyboard every TR
 

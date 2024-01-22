@@ -30,7 +30,7 @@ def get_keyboard(dev_name):
 
 class EventHandler:
 
-    def __init__(self, rt_key = 'space', kb_name = 'Dell Dell USB Entry Keyboard',
+    def __init__(self, rt_key = '9', kb_name = 'Dell Dell USB Entry Keyboard',
                         is_test = False, **win_kwargs):
 
         self.is_test = is_test
@@ -173,15 +173,19 @@ class EventHandler:
         sleep(wait_secs)
 
     def get_response(self):
-        self.display('Did you cause the button press?')
+        self.display('''
+            Did you cause the button press?
+
+            (thumb for yes, index finger for no)
+            ''')
         if self.is_test:
             sleep(.2)
             return np.random.choice([0, 1])
         else:
-            key = self.kb.waitKeys(keyList = ['b', 'm'])[0]
-            if key.name == 'b':
+            key = self.kb.waitKeys(keyList = ['6', '7'])[0]
+            if key.name == '6':
                 return 1
-            elif key.name == 'm':
+            elif key.name == '7':
                 return 0
             else:
                 raise ValueError("that shouldn't have happened")
