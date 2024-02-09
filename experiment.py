@@ -238,9 +238,9 @@ def get_priors(sub, run, dir):
 		# use posterior from last time, but add a bit of uncertainty
 		priors = dict(
 			alpha_mean = df.alpha_mean.iloc[-1],
-			alpha_scale = df.alpha_scale.iloc[-1] * 1.5,
-			beta_mean = df.beta_mean.iloc[-1],
-			beta_scale = df.beta_scale.iloc[-1] * 1.5
+			alpha_scale = df.alpha_scale.iloc[0],
+			beta_mean = 0.017,
+			beta_scale = 0.005
 		)
 	return priors
 
