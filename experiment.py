@@ -309,7 +309,7 @@ if __name__ == '__main__':
 	ui.win.winHandle.activate() # move window to front
 
 	## run a task block
-	if run in ['01', '09']:
+	if run in ['01']:
 		baseline_block(ui, beh_log, run, tr_listener)
 	else:
 		priors = get_priors(sub, run, beh_log.dir)
